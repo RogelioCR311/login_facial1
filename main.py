@@ -7,11 +7,12 @@ from tkinter import *
 from PIL import Image, ImageTk
 import imutils
 import math
+from env import PATH
 
 # Paths
-outputFolderPathUser = 'C:/Users/Rogelio/Desktop/facial_login/database/users'
-pathUserCheck = 'C:/Users/Rogelio/Desktop/facial_login/database/users/'
-outputFolderPathFace = 'C:/Users/Rogelio/Desktop/facial_login/database/faces'
+outputFolderPathUser = f'{PATH}/database/users'
+pathUserCheck = f'{PATH}/database/users/'
+outputFolderPathFace = f'{PATH}/database/faces'
 
 def signBiometric():
     global pantalla2, conteo, parpadeo, img_info, step, cap, lblVideo
@@ -96,9 +97,11 @@ def signBiometric():
                                         if yi < 0 : yi = 0
                                         if anc < 0 : anc = 0
                                         if alt < 0 : alt = 0
-                                                                            
-                                        # Draw
-                                        cv2.rectangle(frame, (xi, yi, anc, alt), (255, 255, 255), 2)
+                                        
+                                        # Steps
+                                        if step == 0:
+                                            # Draw
+                                            cv2.rectangle(frame, (xi, yi, anc, alt), (255, 255, 255), 2)
 
                             #Circle
                             cv2.circle(frame, (x1,y1), 2, (255,0,0), cv2.FILLED)
@@ -177,6 +180,14 @@ def sign():
 def log():
     print('Hello')
 
+# Read img
+img_info = cv2.imread(f'{PATH}/setup/Inicio.png')
+img_check = cv2.imread(f'{PATH}/setup/check.png')
+img_step0 = cv2.imread(f'{PATH}/setup/Step0.png')
+img_step1 = cv2.imread(f'{PATH}/setup/Step1.png')
+img_step2 = cv2.imread(f'{PATH}/setup/Step2.png')
+img_linche = cv2.imread(f'{PATH}/setup/LivenessCheck.png')
+
 # Variables
 parpadeo = False
 conteo = 0
@@ -211,7 +222,7 @@ pantalla.title('FACE RECOGNITION SYSTEM')
 pantalla.geometry('1280x720')
 
 #Fondo
-imagenF = PhotoImage(file='C:/Users/Rogelio/Desktop/facial_login/setup/Inicio.png')
+imagenF = PhotoImage(file=f'{PATH}/setup/Inicio.png')
 background = Label(image=imagenF, text='Inicio')
 background.place(x=0, y=0, relheight=1, relwidth=1)
 
@@ -239,12 +250,12 @@ inputUserLog.place(x=730, y=530)
 
 # Button
 # Sign
-imagenBR = PhotoImage(file='C:/Users/Rogelio/Desktop/facial_login/setup/BtSign.png')
+imagenBR = PhotoImage(file=f'{PATH}/setup/BtSign.png')
 btReg = Button(pantalla, text='Registro', image=imagenBR, height='40', width='200', command=sign)
 btReg.place(x=300, y=580)
 
 # Sign 
-imagenBL = PhotoImage(file='C:/Users/Rogelio/Desktop/facial_login/setup/BtLogin.png')
+imagenBL = PhotoImage(file=f'{PATH}/setup/BtLogin.png')
 btLog = Button(pantalla, text='Inicio', image=imagenBL, height='40', width='200', command=log)
 btLog.place(x=800, y=580)
 
