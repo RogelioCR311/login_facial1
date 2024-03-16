@@ -14,6 +14,12 @@ outputFolderPathUser = f'{PATH}/database/users'
 pathUserCheck = f'{PATH}/database/users/'
 outputFolderPathFace = f'{PATH}/database/faces'
 
+def closeWindow():
+    global step, conteo
+    conteo = 0
+    step = 0
+    pantalla2.destroy()
+
 def signBiometric():
     global pantalla2, conteo, parpadeo, img_info, step, cap, lblVideo
 
@@ -26,6 +32,7 @@ def signBiometric():
 
         # RGB
         frameRGB = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frameSave = frame.copy()
 
         # Frame show
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -66,6 +73,17 @@ def signBiometric():
                             x4, y4 = lista[386][1:]
                             longitud2 = math.hypot(x4-x3, y4-y3)
 
+                            # Parietal derecho
+                            x5, y5 = lista[139][1:]
+
+                            #Parietal izquierdo
+                            x6, y6 = lista[368][1:]
+
+                            # Ceja derecha
+                            x7, y7 = lista[70][1:]
+                            x8, y8 = lista[300][1:]
+
+
                             #Face Detect
                             faces = detector.process(frameRGB)
 
@@ -86,11 +104,13 @@ def signBiometric():
                                         offsetan = (offsetx / 100 ) * anc
                                         xi = int(xi - int(offsetan/2))
                                         anc = int(anc + offsetan)
-                                        
+                                        xf = xi + anc
+
                                         # Offset Y
                                         offsetal = (offsety / 100 ) * alt
                                         yi = int(yi - int(offsetal/2))
                                         alt = int(alt + offsetal)
+                                        yf = yi + alt
                                         
                                         # Error
                                         if xi < 0 : xi = 0
@@ -103,9 +123,57 @@ def signBiometric():
                                             # Draw
                                             cv2.rectangle(frame, (xi, yi, anc, alt), (255, 255, 255), 2)
 
-                            #Circle
-                            cv2.circle(frame, (x1,y1), 2, (255,0,0), cv2.FILLED)
-                            cv2.circle(frame, (x2,y2), 2, (255,0,0), cv2.FILLED)
+                                            # IMG Step0
+                                            als0, ans0, c = img_step0.shape
+                                            frame[50:50 + als0, 50:50 + ans0] = img_step0
+                                            # IMG Step1
+                                            als1, ans1, c = img_step1.shape
+                                            frame[50:50 + als1, 1030:1030 + ans1] = img_step1
+                                            # IMG Step2
+                                            als2, ans2, c = img_step2.shape
+                                            frame[270:270 + als2, 1030:1030 + ans2] = img_step2
+
+                                            # Face Center
+                                            if x7 > x5 and x8 < x6:
+                                                #IMG Check
+                                                # IMG Step2
+                                                alch, anch, c = img_check.shape
+                                                frame[165:165 + alch, 1105:1105 + anch] = img_check
+
+                                                # Conteo Parpadeo
+                                                if longitud1 <= 18 and longitud2 <= 18 and parpadeo == False:
+                                                    conteo = conteo + 1
+                                                    parpadeo = True
+                                                elif longitud1 > 18 and longitud2 > 18 and parpadeo == True:
+                                                    parpadeo = False
+
+                                                cv2.putText(frame, f'Parpadeos: {int(conteo)}', (1070, 375), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255,255), 1)
+                                                
+                                                if conteo >= 3:
+                                                    # IMG Check
+                                                    alch, anch, c = img_check.shape
+                                                    frame[385:385 + alch, 1105:1105 + anch] = img_check
+
+                                                    # Open Eyes
+                                                    if longitud1 > 20 and longitud2 > 20:
+                                                        cut = frameSave[yi:yf, xi:xf]
+
+                                                        # Save
+                                                        cv2.imwrite(f'{outputFolderPathFace}/{regUser}.png', cut)
+
+                                                        step = 1
+
+                                            else:
+                                                conteo = 0
+                                        
+                                        if step == 1:
+                                            # Draw
+                                            cv2.rectangle(frame, (xi, yi, anc, alt), (0, 255, 0), 2)
+                                            # IMG Check Liveness
+                                            alli, anli, c = img_liche.shape
+                                            frame[50:50 + alli, 50:50 + anli] = img_liche
+                                            closeWindow()
+                                            return
 
         # Convert video
         im = Image.fromarray(frame)
@@ -181,12 +249,12 @@ def log():
     print('Hello')
 
 # Read img
-img_info = cv2.imread(f'{PATH}/setup/Inicio.png')
+img_info = cv2.imread(f'{PATH}/setup/Info.png')
 img_check = cv2.imread(f'{PATH}/setup/check.png')
 img_step0 = cv2.imread(f'{PATH}/setup/Step0.png')
 img_step1 = cv2.imread(f'{PATH}/setup/Step1.png')
 img_step2 = cv2.imread(f'{PATH}/setup/Step2.png')
-img_linche = cv2.imread(f'{PATH}/setup/LivenessCheck.png')
+img_liche = cv2.imread(f'{PATH}/setup/LivenessCheck.png')
 
 # Variables
 parpadeo = False
